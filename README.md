@@ -1,8 +1,8 @@
 # front restaurante
 
 ## Instalar todas las dependencias
-´´´npm install
+´´´npm install´´´
 
 ## Iniciar proyecto
-´´´npm run dev
+´´´npm run dev´´´
 
