@@ -5,6 +5,7 @@ import Menu from './pages/Menu';
 import Payment from './pages/Payment';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
+import Register from './pages/Register';
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +29,10 @@ export const router = createBrowserRouter([
         path: 'login',
         element: <Login />
       },
+      {
+        path: 'register',
+        element: <Register />
+      }
     ],
   },
 ]);
