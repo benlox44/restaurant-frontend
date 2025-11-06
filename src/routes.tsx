@@ -7,6 +7,7 @@ import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ConfirmAccount from './pages/ConfirmAccount';
+import ConfirmEmail from './pages/ConfirmEmail';
 
 export const router = createBrowserRouter([
   {
@@ -35,8 +36,12 @@ export const router = createBrowserRouter([
         element: <Register />
       },
       {
-        path: 'auth/confirm-email',
+        path: 'auth/confirm-account',
         element: <ConfirmAccount />
+      },
+      {
+        path: 'auth/confirm-email',
+        element: <ConfirmEmail />
       },
     ],
   },
