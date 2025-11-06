@@ -6,6 +6,7 @@ import Payment from './pages/Payment';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ConfirmAccount from './pages/ConfirmAccount';
 
 export const router = createBrowserRouter([
   {
@@ -32,7 +33,11 @@ export const router = createBrowserRouter([
       {
         path: 'register',
         element: <Register />
-      }
+      },
+      {
+        path: 'auth/confirm-email',
+        element: <ConfirmAccount />
+      },
     ],
   },
 ]);
