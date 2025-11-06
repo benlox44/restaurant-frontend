@@ -93,7 +93,7 @@ export default function Register() {
     return (
         <div className="flex flex-col items-center justify-center h-screen dark bg-linear-to-t from-sky-500 to-indigo-500">
             <div className="w-full max-w-md bg-gray-800 rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-200 mb-4">Register</h2>
+                <h2 className="text-2xl font-bold text-gray-200 mb-4">Crear cuenta</h2>
                 
                 {error && (
                     <div className="bg-red-500 text-white p-3 rounded-md mb-4 flex items-start">
@@ -160,7 +160,7 @@ export default function Register() {
                     />
                     <label className="flex cursor-pointer items-center justify-between p-1 text-slate-400"></label>
                     <label className="flex cursor-pointer items-center justify-between p-1 text-slate-400">
-                        Accept terms of use
+                        Aceptar los terminos de uso
                         <div className="relative inline-block">
                             <input className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2" type="checkbox"
                                 checked={terms}
