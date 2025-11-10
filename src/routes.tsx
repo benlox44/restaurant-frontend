@@ -13,11 +13,32 @@ import HomePage from './pages/HomePage';
 export const router = createBrowserRouter([
   {
     path: '/',
+    element: <HomePage />,
+    errorElement: <NotFound />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/register',
+    element: <Register />,
+  },
+  {
+    path: '/auth/confirm-account',
+    element: <ConfirmAccount />,
+  },
+  {
+    path: '/auth/confirm-email',
+    element: <ConfirmEmail />,
+  },
+  {
+    path: '/',
     element: <App />,
     errorElement: <NotFound />,
     children: [
       {
-        index: true,
+        path: 'home',
         element: <Home />,
       },
       {
@@ -27,26 +48,6 @@ export const router = createBrowserRouter([
       {
         path: 'payment',
         element: <Payment />,
-      },
-      {
-        path: 'login',
-        element: <Login />
-      },
-      {
-        path: 'register',
-        element: <Register />
-      },
-      {
-        path: 'auth/confirm-account',
-        element: <ConfirmAccount />
-      },
-      {
-        path: 'auth/confirm-email',
-        element: <ConfirmEmail />
-      },
-      {
-        path: 'home',
-        element: <HomePage />
       },
     ],
   },
