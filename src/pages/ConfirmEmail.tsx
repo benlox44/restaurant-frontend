@@ -23,14 +23,12 @@ export default function ConfirmEmail() {
     onCompleted: (data) => {
       console.log("Email confirmado:", data.confirmEmail.message);
       setStatus('success');
-      setMessage("¡Tu cuenta ha sido confirmada exitosamente!");
+      setMessage("¡Tu cuenta ha sido confirmada exitosamente! Serás redirigido al inicio de sesión.");
 
-      
-      
-      // Redirigir a la raíz después de 10 segundos
+      // Redirigir al login después de 3 segundos
       setTimeout(() => {
-        navigate("/");
-      }, 10000);
+        navigate("/login");
+      }, 3000);
     },
     onError: (error) => {
       console.error("Error al confirmar email:", error);
@@ -42,7 +40,7 @@ export default function ConfirmEmail() {
       } else if (errorMessage.includes('already confirmed')) {
         setMessage("Esta cuenta ya ha sido confirmada. Puedes iniciar sesión.");
         setTimeout(() => {
-          navigate("/");
+          navigate("/login");
         }, 3000);
       } else {
         setMessage("Error al confirmar tu cuenta. Por favor, intenta nuevamente.");

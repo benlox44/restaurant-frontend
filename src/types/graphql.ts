@@ -26,10 +26,74 @@ export interface User {
   oldEmail?: string;
   newEmail?: string;
   emailChangedAt?: string;
+  role: string;
 }
 
 export interface MyProfileResponse {
   myProfile: User;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+}
+
+export interface OrderItem {
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Order {
+  id: string;
+  items: OrderItem[];
+  total: number;
+  status: string;
+  createdAt: number;
+}
+
+export interface GetMenuResponse {
+  menu: MenuItem[];
+}
+
+export interface CreateMenuResponse {
+  createMenuItem: {
+    id: string;
+    item: MenuItem;
+  };
+}
+
+export interface UpdateMenuResponse {
+  updateMenuItem: {
+    ok: boolean;
+  };
+}
+
+export interface DeleteMenuResponse {
+  deleteMenuItem: {
+    ok: boolean;
+  };
+}
+
+export interface GetOrdersResponse {
+  orders: Order[];
+}
+
+export interface CreateOrderResponse {
+  createOrder: {
+    id: string;
+    order: Order;
+  };
+}
+
+export interface UpdateOrderStatusResponse {
+  updateOrderStatus: {
+    ok: boolean;
+  };
 }
 
 // Mutation Variables
@@ -37,6 +101,7 @@ export interface RegisterVariables {
   email: string;
   password: string;
   name: string;
+  adminSecret?: string;
 }
 
 export interface LoginVariables {

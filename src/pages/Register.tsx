@@ -10,6 +10,8 @@ export default function Register() {
     const [password, setPassword] = useState("");
     const [rPassword, setRPassword] = useState("");
     const [terms, setTerms] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [adminSecret, setAdminSecret] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
@@ -80,6 +82,7 @@ export default function Register() {
                     email: email.trim(),
                     password,
                     name: name.trim(),
+                    adminSecret: isAdmin ? adminSecret : undefined,
                 },
             });
         } catch (err) {
@@ -88,7 +91,7 @@ export default function Register() {
         }
     };
 
-    const isFormValid = email.trim() !== "" && password.trim() !== "" && rPassword.trim() !== "" && name.trim() !== "" && terms;
+    const isFormValid = email.trim() !== "" && password.trim() !== "" && rPassword.trim() !== "" && name.trim() !== "" && terms && (!isAdmin || adminSecret.trim() !== "");
     
     return (
         <div className="flex flex-col items-center justify-center h-screen dark bg-linear-to-t from-sky-500 to-indigo-500">
@@ -158,7 +161,31 @@ export default function Register() {
                         onChange={(e) => setRPassword(e.target.value)}
                         disabled={loading}
                     />
-                    <label className="flex cursor-pointer items-center justify-between p-1 text-slate-400"></label>
+                    <label className="flex cursor-pointer items-center justify-between p-1 text-slate-400 mb-2">
+                        Registrar como Administrador
+                        <div className="relative inline-block">
+                            <input 
+                                className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gray-400 checked:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2" 
+                                type="checkbox"
+                                checked={isAdmin}
+                                onChange={(e) => setIsAdmin(e.target.checked)}
+                                disabled={loading}
+                            />
+                            <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-indigo-500" />
+                        </div>
+                    </label>
+
+                    {isAdmin && (
+                        <input 
+                            placeholder="Clave de Administrador"
+                            className="bg-gray-700 text-gray-200 border-0 rounded-md p-2 mb-4 focus:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition ease-in-out duration-150 w-full"
+                            type="password"
+                            value={adminSecret}
+                            onChange={(e) => setAdminSecret(e.target.value)}
+                            disabled={loading}
+                        />
+                    )}
+
                     <label className="flex cursor-pointer items-center justify-between p-1 text-slate-400">
                         Aceptar los terminos de uso
                         <div className="relative inline-block">

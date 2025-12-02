@@ -1,7 +1,33 @@
 ﻿import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 export default function HomePage() {
     const navigate = useNavigate();
+    const { user, isAuthenticated, loading } = useAuth();
+
+    useEffect(() => {
+        // If user is authenticated, redirect to their dashboard
+        if (!loading && isAuthenticated && user) {
+            if (user.role === 'ADMIN') {
+                navigate('/admin');
+            } else {
+                navigate('/client');
+            }
+        }
+    }, [loading, isAuthenticated, user, navigate]);
+
+    // Show loading while checking auth
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-gradient-to-b from-sky-500 to-indigo-600">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+                    <p className="mt-4 text-white">Cargando...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-sky-500 via-indigo-500 to-indigo-600">

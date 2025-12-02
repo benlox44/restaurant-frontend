@@ -4,6 +4,21 @@ import { useMutation } from "@apollo/client/react";
 import { LOGIN_MUTATION } from "../graphql/mutations/auth";
 import type { LoginResponse, LoginVariables } from "../types/graphql";
 
+// Helper function to decode JWT and extract role
+function decodeJWT(token: string): { role?: string } | null {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error("Error decoding JWT:", error);
+        return null;
+    }
+}
+
 export default function Login(){
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
@@ -16,7 +31,8 @@ export default function Login(){
             console.log("Login exitoso");
             
             // Guardar el token en localStorage
-            localStorage.setItem('accessToken', data.login.accessToken);
+            const token = data.login.accessToken;
+            localStorage.setItem('accessToken', token);
             
             // Si marcó "recordar", guardar el email
             if (rememberMe) {
@@ -25,8 +41,15 @@ export default function Login(){
                 localStorage.removeItem('rememberedEmail');
             }
             
-            // Redirigir a la página principal
-            navigate('/');
+            // Decodificar el token para obtener el rol
+            const payload = decodeJWT(token);
+            
+            // Redirigir según el rol
+            if (payload?.role === 'ADMIN') {
+                navigate('/admin');
+            } else {
+                navigate('/client');
+            }
         },
         onError: (error) => {
             console.error("Error en el login:", error);
