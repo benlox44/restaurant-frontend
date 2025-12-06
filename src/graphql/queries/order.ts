@@ -16,3 +16,20 @@ export const GET_ORDERS = gql`
     }
   }
 `;
+
+export const GET_MY_ORDERS = gql`
+  query GetMyOrders {
+    orders {
+      id
+      items {
+        menuItemId
+        name
+        quantity
+        price
+      }
+      total
+      status
+      createdAt
+    }
+  }
+`;

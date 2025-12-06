@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Menu from './pages/Menu';
 import Payment from './pages/Payment';
 import AdminOrders from './pages/AdminOrders';
+import ClientOrders from './pages/ClientOrders';
 import NotFound from './pages/NotFound';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -13,6 +14,8 @@ import HomePage from './pages/HomePage';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import Profile from './pages/Profile';
+import ForgotPassword from './pages/ForgotPassword';
 
 export const router = createBrowserRouter([
   {
@@ -37,12 +40,44 @@ export const router = createBrowserRouter([
     element: <ConfirmEmail />,
   },
   {
+    path: '/forgot-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/auth/reset-password',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/auth/unlock-account',
+    element: <ForgotPassword />,
+  },
+  {
+    path: '/auth/confirm-email-update',
+    element: <ConfirmEmail />,
+  },
+  {
+    path: '/auth/revert-email',
+    element: <ConfirmEmail />,
+  },
+  {
+    path: '/profile',
+    element: <ProtectedRoute allowedRoles={['CLIENT', 'ADMIN']}><Profile /></ProtectedRoute>,
+  },
+  {
     path: '/admin',
+    element: <ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>,
+  },
+  {
+    path: '/admin/dashboard',
     element: <ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>,
   },
   {
     path: '/admin/orders',
     element: <ProtectedRoute allowedRoles={['ADMIN']}><AdminOrders /></ProtectedRoute>,
+  },
+  {
+    path: '/admin/menu',
+    element: <ProtectedRoute allowedRoles={['ADMIN']}><Menu /></ProtectedRoute>,
   },
   {
     path: '/admin/menu/create',
@@ -61,12 +96,16 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={['CLIENT']}><ClientDashboard /></ProtectedRoute>,
   },
   {
+    path: '/client/dashboard',
+    element: <ProtectedRoute allowedRoles={['CLIENT']}><ClientDashboard /></ProtectedRoute>,
+  },
+  {
     path: '/client/menu',
     element: <ProtectedRoute allowedRoles={['CLIENT']}><Menu /></ProtectedRoute>,
   },
   {
     path: '/client/orders',
-    element: <ProtectedRoute allowedRoles={['CLIENT']}><div>My Orders (Coming Soon)</div></ProtectedRoute>,
+    element: <ProtectedRoute allowedRoles={['CLIENT']}><ClientOrders /></ProtectedRoute>,
   },
   {
     path: '/client/new-order',

@@ -5,10 +5,8 @@ const httpLink = new HttpLink({
 });
 
 const authLink = new ApolloLink((operation, forward) => {
-  // Obtener el token del localStorage si existe
   const token = localStorage.getItem('accessToken');
   
-  // Agregar el token al header de autorización
   operation.setContext(({ headers = {} }) => ({
     headers: {
       ...headers,

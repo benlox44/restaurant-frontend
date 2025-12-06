@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@apollo/client/react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { CONFIRM_EMAIL } from "../graphql/mutations/auth";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { CONFIRM_EMAIL, CONFIRM_EMAIL_UPDATE } from "../graphql/mutations/auth";
 
 interface ConfirmEmailResponse {
   confirmEmail: {
@@ -16,35 +16,55 @@ interface ConfirmEmailVariables {
 export default function ConfirmEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState("");
 
+  const isEmailUpdate = location.pathname.includes('confirm-email-update');
+  const isRevert = location.pathname.includes('revert-email');
+
   const [confirmEmailMutation] = useMutation<ConfirmEmailResponse, ConfirmEmailVariables>(CONFIRM_EMAIL, {
     onCompleted: (data) => {
-      console.log("Email confirmado:", data.confirmEmail.message);
+      console.log("Email confirmed:", data.confirmEmail.message);
       setStatus('success');
-      setMessage("¡Tu cuenta ha sido confirmada exitosamente! Serás redirigido al inicio de sesión.");
+      setMessage("Your account has been confirmed successfully! You will be redirected to login.");
 
-      // Redirigir al login después de 3 segundos
       setTimeout(() => {
         navigate("/login");
       }, 3000);
     },
     onError: (error) => {
-      console.error("Error al confirmar email:", error);
+      console.error("Error confirming email:", error);
       setStatus('error');
       
       const errorMessage = error.message.toLowerCase();
       if (errorMessage.includes('invalid') || errorMessage.includes('expired')) {
-        setMessage("El enlace de confirmación es inválido o ha expirado. Por favor, solicita un nuevo enlace.");
+        setMessage("The confirmation link is invalid or has expired. Please request a new link.");
       } else if (errorMessage.includes('already confirmed')) {
-        setMessage("Esta cuenta ya ha sido confirmada. Puedes iniciar sesión.");
+        setMessage("This account has already been confirmed. You can log in.");
         setTimeout(() => {
           navigate("/login");
         }, 3000);
       } else {
-        setMessage("Error al confirmar tu cuenta. Por favor, intenta nuevamente.");
+        setMessage("Error confirming your account. Please try again.");
       }
+    },
+  });
+
+  const [confirmEmailUpdateMutation] = useMutation<ConfirmEmailResponse, ConfirmEmailVariables>(CONFIRM_EMAIL_UPDATE, {
+    onCompleted: (data) => {
+      console.log("Email update confirmed:", data);
+      setStatus('success');
+      setMessage("Your email has been updated successfully! You will be redirected to login.");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+    },
+    onError: (error) => {
+      console.error("Error confirming email update:", error);
+      setStatus('error');
+      setMessage("Error confirming email update. The link may be invalid or expired.");
     },
   });
 
@@ -53,15 +73,16 @@ export default function ConfirmEmail() {
     
     if (!token) {
       setStatus('error');
-      setMessage("Token de confirmación no encontrado en la URL.");
+      setMessage("Confirmation token not found in URL.");
       return;
     }
 
-    // Ejecutar la mutación de confirmación
-    confirmEmailMutation({
-      variables: { token }
-    });
-  }, [searchParams, confirmEmailMutation]);
+    if (isEmailUpdate || isRevert) {
+      confirmEmailUpdateMutation({ variables: { token } });
+    } else {
+      confirmEmailMutation({ variables: { token } });
+    }
+  }, [searchParams, confirmEmailMutation, confirmEmailUpdateMutation, isEmailUpdate, isRevert]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -93,10 +114,10 @@ export default function ConfirmEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Confirmando tu cuenta...
+                Confirming your account...
               </h2>
               <p className="text-gray-600">
-                Por favor espera mientras verificamos tu correo electrónico.
+                Please wait while we verify your email address.
               </p>
             </>
           )}
@@ -120,14 +141,14 @@ export default function ConfirmEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                ¡Cuenta Confirmada!
+                Account Confirmed!
               </h2>
               <p className="text-gray-600 mb-4">
                 {message}
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
                 <p className="text-sm text-blue-700">
-                  Serás redirigido a la página de inicio en unos segundos...
+                  You will be redirected to the home page in a few seconds...
                 </p>
               </div>
               <div className="mt-6">
@@ -135,7 +156,7 @@ export default function ConfirmEmail() {
                   href="/"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Ir al inicio ahora
+                  Go to home now
                 </a>
               </div>
             </>
@@ -160,7 +181,7 @@ export default function ConfirmEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Error de Confirmación
+                Confirmation Error
               </h2>
               <p className="text-gray-600 mb-4">
                 {message}

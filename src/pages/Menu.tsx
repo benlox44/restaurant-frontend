@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client/react';
+import { useNavigate } from 'react-router-dom';
 import { GET_MENU } from '../graphql/queries/menu';
-import { CREATE_MENU_ITEM, DELETE_MENU_ITEM } from '../graphql/mutations/menu';
+import { CREATE_MENU_ITEM, UPDATE_MENU_ITEM, DELETE_MENU_ITEM } from '../graphql/mutations/menu';
 import { CREATE_ORDER } from '../graphql/mutations/order';
 import { useAuth } from '../hooks/useAuth';
 import type { GetMenuResponse, MenuItem } from '../types/graphql';
 
 export default function Menu() {
   const { isAdmin, isClient } = useAuth();
+  const navigate = useNavigate();
   const { data, loading, error, refetch } = useQuery<GetMenuResponse>(GET_MENU);
   
   const [createMenuItem] = useMutation(CREATE_MENU_ITEM, { 
@@ -15,6 +17,13 @@ export default function Menu() {
       refetch();
       setNewItem({ name: '', description: '', price: 0, category: '' });
       alert('Item created!');
+    } 
+  });
+  const [updateMenuItem] = useMutation(UPDATE_MENU_ITEM, { 
+    onCompleted: () => {
+      refetch();
+      setEditingItem(null);
+      alert('Item updated!');
     } 
   });
   const [deleteMenuItem] = useMutation(DELETE_MENU_ITEM, { onCompleted: () => refetch() });
@@ -26,6 +35,7 @@ export default function Menu() {
   });
 
   const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, category: '' });
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [cart, setCart] = useState<{ item: MenuItem; quantity: number }[]>([]);
 
   const handleCreate = (e: React.FormEvent) => {
@@ -33,8 +43,22 @@ export default function Menu() {
     createMenuItem({ variables: { ...newItem, price: parseFloat(newItem.price.toString()) } });
   };
 
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    updateMenuItem({ 
+      variables: { 
+        id: editingItem.id, 
+        name: editingItem.name,
+        description: editingItem.description,
+        price: parseFloat(editingItem.price.toString()),
+        category: editingItem.category
+      } 
+    });
+  };
+
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure?')) {
+    if (confirm('Are you sure you want to delete this item?')) {
       deleteMenuItem({ variables: { id } });
     }
   };
@@ -49,69 +73,288 @@ export default function Menu() {
     });
   };
 
+  const removeFromCart = (itemId: string) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.item.id === itemId);
+      if (existing && existing.quantity > 1) {
+        return prev.map(i => i.item.id === itemId ? { ...i, quantity: i.quantity - 1 } : i);
+      }
+      return prev.filter(i => i.item.id !== itemId);
+    });
+  };
+
+  const clearCart = () => {
+    if (confirm('Clear all items from cart?')) {
+      setCart([]);
+    }
+  };
+
   const handlePlaceOrder = () => {
+    if (cart.length === 0) {
+      alert('Your cart is empty! Add items before placing an order.');
+      return;
+    }
     const items = cart.map(c => ({
       menuItemId: c.item.id,
-      name: c.item.name,
-      quantity: c.quantity,
-      price: c.item.price
+      quantity: c.quantity
     }));
     createOrder({ variables: { items } });
   };
 
-  if (loading) return <p>Loading menu...</p>;
-  if (error) return <p>Error loading menu: {error.message}</p>;
+  const getDashboardPath = () => {
+    return isAdmin ? '/admin' : '/client';
+  };
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen ${isAdmin ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900' : 'bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900'} flex items-center justify-center`}>
+        <div className="text-center">
+          <div className={`inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 ${isAdmin ? 'border-blue-500' : 'border-indigo-500'}`}></div>
+          <p className="mt-4 text-gray-400">Loading menu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`min-h-screen ${isAdmin ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900' : 'bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900'} flex items-center justify-center`}>
+        <div className="bg-red-600/20 border border-red-500/30 rounded-xl p-6 text-center">
+          <p className="text-red-300">Error loading menu: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">Nuestro Menú</h1>
-
-      {isAdmin && (
-        <div className="bg-gray-100 p-4 rounded mb-8">
-          <h2 className="text-xl font-bold mb-4">Admin: Add Menu Item</h2>
-          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input placeholder="Name" value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} className="p-2 border rounded" required />
-            <input placeholder="Description" value={newItem.description} onChange={e => setNewItem({...newItem, description: e.target.value})} className="p-2 border rounded" required />
-            <input type="number" placeholder="Price" value={newItem.price} onChange={e => setNewItem({...newItem, price: parseFloat(e.target.value)})} className="p-2 border rounded" required />
-            <input placeholder="Category" value={newItem.category} onChange={e => setNewItem({...newItem, category: e.target.value})} className="p-2 border rounded" required />
-            <button type="submit" className="bg-green-600 text-white p-2 rounded hover:bg-green-700">Add Item</button>
-          </form>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {data?.menu.map((item: MenuItem) => (
-          <div key={item.id} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow border border-gray-200">
-            <h3 className="text-xl font-semibold mb-2">{item.name}</h3>
-            <p className="text-gray-600 mb-4">{item.description}</p>
-            <p className="text-sm text-gray-500 mb-2">Category: {item.category}</p>
-            <p className="text-2xl font-bold text-blue-600">${item.price}</p>
-            
-            {isAdmin && (
-              <button onClick={() => handleDelete(item.id)} className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full">
-                Delete
-              </button>
-            )}
-            
-            {isClient && (
-              <button onClick={() => addToCart(item)} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">
-                Add to Cart
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {isClient && cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
-          <div className="max-w-6xl mx-auto flex justify-between items-center">
+    <div className={`min-h-screen ${isAdmin ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900' : 'bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900'} pb-24`}>
+      {/* Header */}
+      <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-bold text-lg">Cart ({cart.reduce((a, b) => a + b.quantity, 0)} items)</h3>
-              <p>Total: ${cart.reduce((a, b) => a + (b.item.price * b.quantity), 0)}</p>
+              <h1 className="text-2xl font-bold text-white">{isAdmin ? 'Manage Menu' : 'Our Menu'}</h1>
+              <p className="text-gray-400 text-sm mt-1">{isAdmin ? 'Add, edit, or delete menu items' : 'Browse our delicious dishes'}</p>
             </div>
-            <button onClick={handlePlaceOrder} className="bg-green-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-700">
-              Place Order
+            <button
+              onClick={() => navigate(getDashboardPath())}
+              className={`${isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2`}
+            >
+              <span>⬅️</span>
+              Back to Dashboard
             </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        {/* Admin: Add Menu Item Form */}
+        {isAdmin && !editingItem && (
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 mb-8">
+            <h2 className="text-xl font-bold text-white mb-4">➕ Add Menu Item</h2>
+            <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input 
+                placeholder="Name" 
+                value={newItem.name} 
+                onChange={e => setNewItem({...newItem, name: e.target.value})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <input 
+                placeholder="Description" 
+                value={newItem.description} 
+                onChange={e => setNewItem({...newItem, description: e.target.value})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <input 
+                type="number" 
+                step="0.01" 
+                placeholder="Price" 
+                value={newItem.price} 
+                onChange={e => setNewItem({...newItem, price: parseFloat(e.target.value)})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <input 
+                placeholder="Category" 
+                value={newItem.category} 
+                onChange={e => setNewItem({...newItem, category: e.target.value})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <button 
+                type="submit" 
+                className="md:col-span-2 bg-green-600 hover:bg-green-700 text-white font-semibold p-3 rounded-lg transition-colors"
+              >
+                ✅ Add Item
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Admin: Edit Menu Item Form */}
+        {isAdmin && editingItem && (
+          <div className="bg-blue-600/20 border-2 border-blue-500/50 backdrop-blur-sm rounded-xl p-6 mb-8">
+            <h2 className="text-xl font-bold text-white mb-4">✏️ Edit Menu Item</h2>
+            <form onSubmit={handleUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input 
+                placeholder="Name" 
+                value={editingItem.name} 
+                onChange={e => setEditingItem({...editingItem, name: e.target.value})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <input 
+                placeholder="Description" 
+                value={editingItem.description} 
+                onChange={e => setEditingItem({...editingItem, description: e.target.value})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <input 
+                type="number" 
+                step="0.01" 
+                placeholder="Price" 
+                value={editingItem.price} 
+                onChange={e => setEditingItem({...editingItem, price: parseFloat(e.target.value)})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <input 
+                placeholder="Category" 
+                value={editingItem.category} 
+                onChange={e => setEditingItem({...editingItem, category: e.target.value})} 
+                className="p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400" 
+                required 
+              />
+              <button 
+                type="submit" 
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold p-3 rounded-lg transition-colors"
+              >
+                💾 Update Item
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setEditingItem(null)} 
+                className="bg-gray-600 hover:bg-gray-700 text-white font-semibold p-3 rounded-lg transition-colors"
+              >
+                ❌ Cancel
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Menu Items Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data?.menu.map((item: MenuItem) => (
+            <div 
+              key={item.id} 
+              className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 hover:bg-gray-800/70 hover:border-blue-500/50 transition-all duration-300"
+            >
+              <h3 className="text-xl font-semibold text-white mb-2">{item.name}</h3>
+              <p className="text-gray-400 mb-3 text-sm">{item.description}</p>
+              <p className="text-xs text-gray-500 mb-3">
+                <span className="bg-gray-700/50 px-2 py-1 rounded">📂 {item.category}</span>
+              </p>
+              <p className="text-3xl font-bold text-blue-400 mb-4">${item.price.toFixed(2)}</p>
+              
+              {isAdmin && (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setEditingItem(item)} 
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-semibold"
+                  >
+                    ✏️ Edit
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(item.id)} 
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors font-semibold"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              )}
+              
+              {isClient && (
+                <button 
+                  onClick={() => addToCart(item)} 
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
+                >
+                  🛒 Add to Cart
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* Shopping Cart - Fixed Bottom */}
+      {isClient && cart.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t-2 border-indigo-500/50 shadow-2xl p-4 max-h-80 overflow-y-auto z-50">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-xl text-white flex items-center gap-2">
+                🛒 Shopping Cart
+              </h3>
+              <button 
+                onClick={clearCart} 
+                className="text-sm text-red-400 hover:text-red-300 hover:underline transition-colors"
+              >
+                🗑️ Clear Cart
+              </button>
+            </div>
+            
+            <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
+              {cart.map(({ item, quantity }) => (
+                <div 
+                  key={item.id} 
+                  className="flex justify-between items-center bg-gray-700/50 border border-gray-600 p-3 rounded-lg"
+                >
+                  <div className="flex-1">
+                    <span className="font-medium text-white">{item.name}</span>
+                    <span className="text-gray-400 text-sm ml-2">${item.price.toFixed(2)}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={() => removeFromCart(item.id)} 
+                      className="bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-lg font-bold transition-colors"
+                    >
+                      -
+                    </button>
+                    <span className="w-8 text-center font-bold text-white">{quantity}</span>
+                    <button 
+                      onClick={() => addToCart(item)} 
+                      className="bg-green-600 hover:bg-green-700 text-white w-8 h-8 rounded-lg font-bold transition-colors"
+                    >
+                      +
+                    </button>
+                    <span className="w-20 text-right text-white font-semibold">
+                      ${(item.price * quantity).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="flex justify-between items-center pt-4 border-t border-gray-600">
+              <div>
+                <p className="text-sm text-gray-400">
+                  {cart.reduce((a, b) => a + b.quantity, 0)} items
+                </p>
+                <p className="font-bold text-2xl text-white">
+                  Total: <span className="text-indigo-400">${cart.reduce((a, b) => a + (b.item.price * b.quantity), 0).toFixed(2)}</span>
+                </p>
+              </div>
+              <button 
+                onClick={handlePlaceOrder} 
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-bold transition-colors shadow-lg flex items-center gap-2"
+              >
+                ✅ Place Order
+              </button>
+            </div>
           </div>
         </div>
       )}
