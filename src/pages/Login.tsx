@@ -161,7 +161,7 @@ export default function Login(){
               />
               Recordar en este dispositivo
             </label>
-            <a className="text-sm text-blue-500 hover:underline mb-0.5" href="/forgot-password">Forgot password?</a>
+            <a className="text-sm text-blue-500 hover:underline mb-0.5" href="/forgot-password">¿Olvidaste tu contraseña?</a>
             <p className="text-white mt-4"> No tienes una cuenta? <a className="text-sm text-blue-500 hover:underline mt-4 cursor-pointer" onClick={()=>{navigate("/register")}}>Crear cuenta</a></p>
           </div>
           <button 

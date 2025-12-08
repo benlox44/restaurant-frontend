@@ -27,7 +27,7 @@ export default function ConfirmEmail() {
     onCompleted: (data) => {
       console.log("Email confirmed:", data.confirmEmail.message);
       setStatus('success');
-      setMessage("Your account has been confirmed successfully! You will be redirected to login.");
+      setMessage("¡Tu cuenta ha sido confirmada exitosamente! Serás redirigido al inicio de sesión.");
 
       setTimeout(() => {
         navigate("/login");
@@ -39,14 +39,14 @@ export default function ConfirmEmail() {
       
       const errorMessage = error.message.toLowerCase();
       if (errorMessage.includes('invalid') || errorMessage.includes('expired')) {
-        setMessage("The confirmation link is invalid or has expired. Please request a new link.");
+        setMessage("El enlace de confirmación es inválido o ha expirado. Por favor solicita un nuevo enlace.");
       } else if (errorMessage.includes('already confirmed')) {
-        setMessage("This account has already been confirmed. You can log in.");
+        setMessage("Esta cuenta ya ha sido confirmada. Puedes iniciar sesión.");
         setTimeout(() => {
           navigate("/login");
         }, 3000);
       } else {
-        setMessage("Error confirming your account. Please try again.");
+        setMessage("Error al confirmar tu cuenta. Por favor intenta nuevamente.");
       }
     },
   });
@@ -55,7 +55,7 @@ export default function ConfirmEmail() {
     onCompleted: (data) => {
       console.log("Email update confirmed:", data);
       setStatus('success');
-      setMessage("Your email has been updated successfully! You will be redirected to login.");
+      setMessage("¡Tu correo electrónico ha sido actualizado exitosamente! Serás redirigido al inicio de sesión.");
 
       setTimeout(() => {
         navigate("/login");
@@ -64,7 +64,7 @@ export default function ConfirmEmail() {
     onError: (error) => {
       console.error("Error confirming email update:", error);
       setStatus('error');
-      setMessage("Error confirming email update. The link may be invalid or expired.");
+      setMessage("Error al confirmar la actualización del correo. El enlace puede ser inválido o haber expirado.");
     },
   });
 
@@ -73,7 +73,7 @@ export default function ConfirmEmail() {
     
     if (!token) {
       setStatus('error');
-      setMessage("Confirmation token not found in URL.");
+      setMessage("Token de confirmación no encontrado en la URL.");
       return;
     }
 
@@ -114,10 +114,10 @@ export default function ConfirmEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Confirming your account...
+                Confirmando tu cuenta...
               </h2>
               <p className="text-gray-600">
-                Please wait while we verify your email address.
+                Por favor espera mientras verificamos tu dirección de correo.
               </p>
             </>
           )}
@@ -141,14 +141,14 @@ export default function ConfirmEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Account Confirmed!
+                ¡Cuenta Confirmada!
               </h2>
               <p className="text-gray-600 mb-4">
                 {message}
               </p>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4">
                 <p className="text-sm text-blue-700">
-                  You will be redirected to the home page in a few seconds...
+                  Serás redirigido a la página de inicio en unos segundos...
                 </p>
               </div>
               <div className="mt-6">
@@ -156,7 +156,7 @@ export default function ConfirmEmail() {
                   href="/"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                 >
-                  Go to home now
+                  Ir al inicio ahora
                 </a>
               </div>
             </>
@@ -181,7 +181,7 @@ export default function ConfirmEmail() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Confirmation Error
+                Error de Confirmación
               </h2>
               <p className="text-gray-600 mb-4">
                 {message}

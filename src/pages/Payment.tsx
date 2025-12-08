@@ -1,4 +1,11 @@
+import { PaymentButton } from '../components/PaymentButton';
+
 export default function Payment() {
+  // Generate a random session ID for testing
+  const sessionId = `session-${Math.floor(Math.random() * 1000000)}`;
+  const buyOrder = `order-${Math.floor(Math.random() * 1000000)}`;
+  const amount = 29750;
+
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-4xl font-bold text-gray-800 mb-8">
@@ -17,12 +24,16 @@ export default function Payment() {
           </div>
           <div className="border-t pt-4 flex justify-between text-xl">
             <span className="font-bold">Total:</span>
-            <span className="font-bold text-blue-600">$29.750</span>
+            <span className="font-bold text-blue-600">${amount.toLocaleString('es-CL')}</span>
           </div>
         </div>
-        <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-          Pagar con Webpay
-        </button>
+        <div className="w-full">
+          <PaymentButton 
+            amount={amount} 
+            buyOrder={buyOrder} 
+            sessionId={sessionId} 
+          />
+        </div>
       </div>
     </div>
   );

@@ -13,7 +13,7 @@ export default function ClientOrders() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900 flex items-center justify-center">
         <div className="bg-red-600/20 border border-red-500/30 rounded-xl p-8 text-center">
-          <p className="text-red-300 text-xl font-semibold">Access Denied</p>
+          <p className="text-red-300 text-xl font-semibold">Acceso Denegado</p>
         </div>
       </div>
     );
@@ -30,6 +30,17 @@ export default function ClientOrders() {
     return colors[status.toUpperCase()] || 'bg-gray-600/20 border-gray-500/30 text-gray-300';
   };
 
+  const getStatusText = (status: string) => {
+    const texts: { [key: string]: string } = {
+      'PENDING': 'PENDIENTE',
+      'PREPARING': 'PREPARANDO',
+      'READY': 'LISTO',
+      'DELIVERED': 'ENTREGADO',
+      'CANCELLED': 'CANCELADO',
+    };
+    return texts[status.toUpperCase()] || status;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-gray-900">
       {/* Header */}
@@ -37,15 +48,15 @@ export default function ClientOrders() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-white">My Orders</h1>
-              <p className="text-gray-400 text-sm mt-1">Track your order history</p>
+              <h1 className="text-2xl font-bold text-white">Mis Pedidos</h1>
+              <p className="text-gray-400 text-sm mt-1">Sigue tu historial de pedidos</p>
             </div>
             <button
               onClick={() => navigate('/client')}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
             >
               <span>⬅️</span>
-              Back to Dashboard
+              Volver al Panel
             </button>
           </div>
         </div>
@@ -56,7 +67,7 @@ export default function ClientOrders() {
         {loading ? (
           <div className="text-center text-white">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-            <p className="mt-4 text-gray-400">Loading your orders...</p>
+            <p className="mt-4 text-gray-400">Cargando tus pedidos...</p>
           </div>
         ) : error ? (
           <div className="bg-red-600/20 border border-red-500/30 rounded-xl p-6 text-center">
@@ -64,12 +75,12 @@ export default function ClientOrders() {
           </div>
         ) : !data?.orders || data.orders.length === 0 ? (
           <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-8 text-center">
-            <p className="text-gray-400 text-lg mb-4">You haven't placed any orders yet.</p>
+            <p className="text-gray-400 text-lg mb-4">Aún no has realizado ningún pedido.</p>
             <button
               onClick={() => navigate('/client/menu')}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
             >
-              Browse our menu
+              Explorar nuestro menú
             </button>
           </div>
         ) : (
@@ -81,19 +92,19 @@ export default function ClientOrders() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="font-bold text-xl text-white">Order #{order.id.substring(0, 8)}</h3>
+                    <h3 className="font-bold text-xl text-white">Pedido #{order.id.substring(0, 8)}</h3>
                     <p className="text-sm text-gray-400 mt-1">
-                      {new Date(order.createdAt * 1000).toLocaleDateString()} at{' '}
+                      {new Date(order.createdAt * 1000).toLocaleDateString()} a las{' '}
                       {new Date(order.createdAt * 1000).toLocaleTimeString()}
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(order.status)}`}>
-                    {order.status}
+                    {getStatusText(order.status)}
                   </span>
                 </div>
                 
                 <div className="border-t border-gray-700 pt-4">
-                  <h4 className="font-semibold text-white mb-3">Items:</h4>
+                  <h4 className="font-semibold text-white mb-3">Artículos:</h4>
                   <ul className="space-y-2">
                     {order.items.map((item: OrderItem, idx: number) => (
                       <li key={idx} className="flex justify-between items-center text-gray-300">

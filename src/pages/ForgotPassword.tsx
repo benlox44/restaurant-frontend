@@ -98,12 +98,12 @@ export default function ForgotPassword() {
     setError('');
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Las contraseñas no coinciden');
       return;
     }
 
     if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
 
@@ -112,10 +112,10 @@ export default function ForgotPassword() {
 
   const getTitle = () => {
     switch (pageType) {
-      case 'unlock-request': return 'Unlock Account';
-      case 'unlock-confirm': return 'Unlock Your Account';
-      case 'reset-confirm': return 'Reset Password';
-      default: return 'Forgot Password';
+      case 'unlock-request': return 'Desbloquear Cuenta';
+      case 'unlock-confirm': return 'Desbloquea tu Cuenta';
+      case 'reset-confirm': return 'Restablecer Contraseña';
+      default: return '¿Olvidaste tu Contraseña?';
     }
   };
 
@@ -144,20 +144,20 @@ export default function ForgotPassword() {
           <form onSubmit={handleRequestReset} className="space-y-4">
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                Email Address
+                Correo Electrónico
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500"
-                placeholder="Enter your email"
+                placeholder="Ingresa tu correo"
                 required
               />
               <p className="text-gray-400 text-xs mt-1">
                 {isUnlockPage 
-                  ? "We'll send you a link to unlock your account"
-                  : "We'll send you a link to reset your password"}
+                  ? "Te enviaremos un enlace para desbloquear tu cuenta"
+                  : "Te enviaremos un enlace para restablecer tu contraseña"}
               </p>
             </div>
 
@@ -166,7 +166,7 @@ export default function ForgotPassword() {
               disabled={isLoading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Sending...' : (isUnlockPage ? 'Send Unlock Link' : 'Send Reset Link')}
+              {isLoading ? 'Enviando...' : (isUnlockPage ? 'Enviar Enlace de Desbloqueo' : 'Enviar Enlace de Restablecimiento')}
             </button>
 
             <div className="text-center">
@@ -175,14 +175,14 @@ export default function ForgotPassword() {
                 onClick={() => navigate('/login')}
                 className="text-indigo-400 hover:text-indigo-300 text-sm"
               >
-                Back to Login
+                Volver al Inicio de Sesión
               </button>
             </div>
           </form>
         ) : isUnlockPage ? (
           <form onSubmit={handleUnlockAccount} className="space-y-4">
             <p className="text-gray-300 mb-4">
-              Click the button below to unlock your account.
+              Haz clic en el botón de abajo para desbloquear tu cuenta.
             </p>
 
             <button
@@ -190,21 +190,21 @@ export default function ForgotPassword() {
               disabled={isLoading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Unlocking...' : 'Unlock Account'}
+              {isLoading ? 'Desbloqueando...' : 'Desbloquear Cuenta'}
             </button>
           </form>
         ) : (
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                New Password
+                Nueva Contraseña
               </label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500"
-                placeholder="Enter new password"
+                placeholder="Ingresa nueva contraseña"
                 required
                 minLength={8}
               />
@@ -212,14 +212,14 @@ export default function ForgotPassword() {
 
             <div>
               <label className="block text-gray-300 text-sm font-medium mb-2">
-                Confirm Password
+                Confirmar Contraseña
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full p-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500"
-                placeholder="Confirm new password"
+                placeholder="Confirma nueva contraseña"
                 required
                 minLength={8}
               />
@@ -230,7 +230,7 @@ export default function ForgotPassword() {
               disabled={isLoading}
               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Resetting...' : 'Reset Password'}
+              {isLoading ? 'Restableciendo...' : 'Restablecer Contraseña'}
             </button>
           </form>
         )}

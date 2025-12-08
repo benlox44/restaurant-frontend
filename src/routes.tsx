@@ -81,15 +81,15 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin/menu/create',
-    element: <ProtectedRoute allowedRoles={['ADMIN']}><div>Create Menu (Coming Soon)</div></ProtectedRoute>,
+    element: <ProtectedRoute allowedRoles={['ADMIN']}><div>Crear Menú (Próximamente)</div></ProtectedRoute>,
   },
   {
     path: '/admin/menu/edit',
-    element: <ProtectedRoute allowedRoles={['ADMIN']}><div>Edit Menu (Coming Soon)</div></ProtectedRoute>,
+    element: <ProtectedRoute allowedRoles={['ADMIN']}><div>Editar Menú (Próximamente)</div></ProtectedRoute>,
   },
   {
     path: '/admin/menu/delete',
-    element: <ProtectedRoute allowedRoles={['ADMIN']}><div>Delete Menu (Coming Soon)</div></ProtectedRoute>,
+    element: <ProtectedRoute allowedRoles={['ADMIN']}><div>Eliminar Menú (Próximamente)</div></ProtectedRoute>,
   },
   {
     path: '/client',

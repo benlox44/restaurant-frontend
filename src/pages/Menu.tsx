@@ -4,35 +4,71 @@ import { useNavigate } from 'react-router-dom';
 import { GET_MENU } from '../graphql/queries/menu';
 import { CREATE_MENU_ITEM, UPDATE_MENU_ITEM, DELETE_MENU_ITEM } from '../graphql/mutations/menu';
 import { CREATE_ORDER } from '../graphql/mutations/order';
+import { CREATE_PAYMENT } from '../graphql/mutations/payment';
 import { useAuth } from '../hooks/useAuth';
 import type { GetMenuResponse, MenuItem } from '../types/graphql';
+import Modal from '../components/Modal';
+
+interface CreateOrderResponse {
+  createOrder: {
+    id: string;
+    order: {
+      id: string;
+      total: number;
+      status: string;
+    };
+  };
+}
+
+interface CreatePaymentResponse {
+  createPayment: {
+    success: boolean;
+    url: string;
+    token: string;
+  };
+}
 
 export default function Menu() {
   const { isAdmin, isClient } = useAuth();
   const navigate = useNavigate();
   const { data, loading, error, refetch } = useQuery<GetMenuResponse>(GET_MENU);
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+  });
+
+  const showModal = (title: string, message: string, onConfirm?: () => void) => {
+    setModalConfig({ isOpen: true, title, message, onConfirm });
+  };
+
+  const closeModal = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
+  };
   
   const [createMenuItem] = useMutation(CREATE_MENU_ITEM, { 
     onCompleted: () => {
       refetch();
       setNewItem({ name: '', description: '', price: 0, category: '' });
-      alert('Item created!');
+      showModal('Éxito', '¡Ítem creado!');
     } 
   });
   const [updateMenuItem] = useMutation(UPDATE_MENU_ITEM, { 
     onCompleted: () => {
       refetch();
       setEditingItem(null);
-      alert('Item updated!');
+      showModal('Éxito', '¡Ítem actualizado!');
     } 
   });
   const [deleteMenuItem] = useMutation(DELETE_MENU_ITEM, { onCompleted: () => refetch() });
-  const [createOrder] = useMutation(CREATE_ORDER, {
-    onCompleted: () => {
-      setCart([]);
-      alert('Order placed successfully!');
-    }
-  });
+  const [createOrder] = useMutation<CreateOrderResponse>(CREATE_ORDER);
+  const [createPayment] = useMutation<CreatePaymentResponse>(CREATE_PAYMENT);
 
   const [newItem, setNewItem] = useState({ name: '', description: '', price: 0, category: '' });
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -58,9 +94,9 @@ export default function Menu() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this item?')) {
+    showModal('Confirmar Eliminación', '¿Estás seguro de que quieres eliminar este ítem?', () => {
       deleteMenuItem({ variables: { id } });
-    }
+    });
   };
 
   const addToCart = (item: MenuItem) => {
@@ -84,21 +120,61 @@ export default function Menu() {
   };
 
   const clearCart = () => {
-    if (confirm('Clear all items from cart?')) {
+    showModal('Confirmar Limpieza', '¿Limpiar todos los ítems del carrito?', () => {
       setCart([]);
-    }
+    });
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (cart.length === 0) {
-      alert('Your cart is empty! Add items before placing an order.');
+      showModal('Error', '¡Tu carrito está vacío! Agrega ítems antes de realizar un pedido.');
       return;
     }
     const items = cart.map(c => ({
       menuItemId: c.item.id,
       quantity: c.quantity
     }));
-    createOrder({ variables: { items } });
+
+    try {
+      const { data } = await createOrder({ variables: { items } });
+      
+      if (data?.createOrder?.order) {
+        const { id, total } = data.createOrder.order;
+        const sessionId = `session-${id}`;
+        
+        // Initiate payment
+        const paymentResult = await createPayment({
+          variables: {
+            amount: Math.round(total),
+            buyOrder: id,
+            sessionId: sessionId
+          }
+        });
+        
+        if (paymentResult.data?.createPayment?.success) {
+          const { url, token } = paymentResult.data.createPayment;
+          
+          // Create and submit form to redirect to Webpay
+          const form = document.createElement('form');
+          form.action = url;
+          form.method = 'POST';
+          
+          const tokenInput = document.createElement('input');
+          tokenInput.type = 'hidden';
+          tokenInput.name = 'token_ws';
+          tokenInput.value = token;
+          
+          form.appendChild(tokenInput);
+          document.body.appendChild(form);
+          form.submit();
+        } else {
+          showModal('Error', 'Error al iniciar el pago. Por favor intente nuevamente.');
+        }
+      }
+    } catch (err) {
+      console.error('Order/Payment error:', err);
+      showModal('Error', 'Ocurrió un error al procesar su pedido.');
+    }
   };
 
   const getDashboardPath = () => {
@@ -358,6 +434,14 @@ export default function Menu() {
           </div>
         </div>
       )}
+      <Modal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        title={modalConfig.title}
+        onConfirm={modalConfig.onConfirm}
+      >
+        {modalConfig.message}
+      </Modal>
     </div>
   );
 }
