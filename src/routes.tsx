@@ -1,8 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import App from './App';
-import Home from './pages/Home';
 import Menu from './pages/Menu';
-import Payment from './pages/Payment';
+import PaymentResult from './pages/PaymentResult';
 import AdminOrders from './pages/AdminOrders';
 import ClientOrders from './pages/ClientOrders';
 import NotFound from './pages/NotFound';
@@ -117,16 +116,8 @@ export const router = createBrowserRouter([
     errorElement: <NotFound />,
     children: [
       {
-        path: 'home',
-        element: <Home />,
-      },
-      {
-        path: 'menu',
-        element: <Menu />,
-      },
-      {
-        path: 'payment',
-        element: <Payment />,
+        path: 'payment/result',
+        element: <PaymentResult />,
       },
     ],
   },

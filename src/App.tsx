@@ -1,5 +1,4 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import Navigation from './components/Navigation';
 
 function App() {
   const location = useLocation();
@@ -17,7 +16,7 @@ function App() {
   
   return (
     <div>
-      {!shouldHideNavbar && <Navigation />}
+      {!shouldHideNavbar}
       <main className="mx-auto">
         <Outlet />
       </main>
